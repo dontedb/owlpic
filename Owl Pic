@@ -1,0 +1,85 @@
+from flask import Flask, request, jsonify # type: ignore
+import pyrebase # type: ignore
+import firebase_admin # type: ignore
+from firebase_admin import credentials, auth # type: ignore
+
+app = Flask(__name__)
+
+# Firebase configuration
+firebase_config = {
+    "apiKey": "YOUR_API_KEY",
+    "authDomain": "YOUR_PROJECT_ID.firebaseapp.com",
+    "databaseURL": "https://YOUR_PROJECT_ID.firebaseio.com",
+    "projectId": "YOUR_PROJECT_ID",
+    "storageBucket": "YOUR_PROJECT_ID.appspot.com",
+    "messagingSenderId": "YOUR_MESSAGING_SENDER_ID",
+    "appId": "YOUR_APP_ID",
+    "measurementId": "YOUR_MEASUREMENT_ID"
+}
+
+# Initialize Pyrebase
+firebase = pyrebase.initialize_app(firebase_config)
+auth_pyrebase = firebase.auth()
+
+# Initialize Firebase Admin SDK
+cred = credentials.Certificate("path/to/serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    try:
+        data = request.get_json()
+        email = data['email']
+        password = data['password']
+        user = auth.create_user(
+            email=email,
+            password=password
+        )
+        return jsonify({"message": "User created successfully", "uid": user.uid}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        email = data['email']
+        password = data['password']
+        user = auth_pyrebase.sign_in_with_email_and_password(email, password)
+        return jsonify({"message": "User logged in successfully", "idToken": user['idToken']}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+@app.route('/social-login', methods=['POST'])
+def social_login():
+    try:
+        data = request.get_json()
+        id_token = data['idToken']
+        decoded_token = auth.verify_id_token(id_token)
+        uid = decoded_token['uid']
+        return jsonify({"message": "Social login successful", "uid": uid}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+# Define lists of clothing items
+shirts = ["t-shirt", "polo shirt", "button-up shirt", "sweatshirt", "hoodie"]
+pants = ["jeans", "khakis", "sweatpants", "shorts"]
+shoes = ["sneakers", "dress shoes", "sandals", "boots"]
+# Define functions to generate outfits based on different criteria
+# Define lists of music genres
+music_genres = ["pop", "rock", "hip-hop", "jazz", "classical"]
+# Define lists of restaurants
+restaurants = ["Italian", "Jamiacan", "Mexican", "Japanese", "Indian", "American"]
+# Define lists of movies
+movies = ["action", "comedy", "drama", "horror", "sci-fi"]
+# Define functions to generate outfits, music, restaurants, and movies
+def generate_outfit():
+    outfit = []
+    outfit.append(any.choice(shirts))
+    outfit.append(any.choice(pants))
+    outfit.append(any.choice(shoes))
+    return outfit
